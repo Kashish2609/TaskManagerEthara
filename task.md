@@ -1,0 +1,5 @@
+- [x] Update server CORS allowedOrigins to include production frontend URL.
+- [x] Update AuthContext axios baseURL to production backend URL.
+- [x] Update vercel.json rewrites to proxy API to backend.
+- [ ] Verify that client requests from https://task-manager-ethara-black.vercel.app succeed without CORS errors.
+- [ ] Deploy updated server and client and test.

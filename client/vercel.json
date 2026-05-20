@@ -3,10 +3,10 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://your-backend-railway-url.up.railway.app/api/:path*"
+      "destination": "https://task-manager-ethara-x1h7.vercel.app/api/:path*"
     },
     {
-      "source": "/((?!api).*)" ,
+      "source": "/((?!api).*)",
       "destination": "/index.html"
     }
   ]

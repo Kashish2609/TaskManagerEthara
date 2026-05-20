@@ -3,8 +3,9 @@ import axios from 'axios';
 
 const AuthContext = createContext();
 
-// Setup base URL for API requests (empty for relative routes, handled by Vite Proxy or served statically)
-axios.defaults.baseURL = '';
+// API base URL: use Vercel backend in production, proxy (vite) in development
+axios.defaults.baseURL = 'https://task-manager-ethara-x1h7.vercel.app';
+
 
 
 export const AuthProvider = ({ children }) => {

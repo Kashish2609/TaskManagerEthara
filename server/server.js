@@ -18,19 +18,20 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:3000',
+  'https://task-manager-ethara-black.vercel.app',
   process.env.CLIENT_URL
 ].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (like Postman, mobile apps, or curl)
+    // Allow requests with no origin (Postman, curl, Railway health checks)
     if (!origin) return callback(null, true);
-    
-    // Allow standard origins or any origin during development
+
+    // In development allow everything; in production enforce allowedOrigins
     if (process.env.NODE_ENV !== 'production' || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    
+
     return callback(new Error('Blocked by CORS policy'), false);
   },
   credentials: true,
@@ -38,6 +39,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
+
 
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
