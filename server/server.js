@@ -8,12 +8,15 @@ const connectDB = require('./config/db');
 // Load environment variables
 dotenv.config();
 
-// Connect to Database
+// Connect Database
 connectDB();
 
 const app = express();
 
-// Middleware
+/* =========================
+   Middleware
+========================= */
+
 const allowedOrigins = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
@@ -22,65 +25,131 @@ const allowedOrigins = [
   process.env.CLIENT_URL
 ].filter(Boolean);
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (Postman, curl, Railway health checks)
-    if (!origin) return callback(null, true);
+app.use(
+  cors({
+    origin: (origin, callback) => {
 
-    // In development allow everything; in production enforce allowedOrigins
-    if (process.env.NODE_ENV !== 'production' || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
+      // Allow requests with no origin
+      // (Postman, mobile apps, curl)
+      if (!origin) {
+        return callback(null, true);
+      }
 
-    return callback(new Error('Blocked by CORS policy'), false);
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+      // Allow all during development
+      if (
+        process.env.NODE_ENV !== 'production' ||
+        allowedOrigins.includes(origin)
+      ) {
+        return callback(null, true);
+      }
+
+      return callback(new Error('Blocked by CORS policy'));
+    },
+
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  })
+);
+
 app.use(express.json());
-
-
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Define Routes
+/* =========================
+   API Routes
+========================= */
+
 app.use('/api/auth', require('./routers/authRoutes'));
 app.use('/api/projects', require('./routers/projectRoutes'));
 app.use('/api/tasks', require('./routers/taskRoutes'));
 
-// Basic health check API endpoint
+/* =========================
+   Health Check Route
+========================= */
+
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'healthy', timestamp: new Date() });
+  res.status(200).json({
+    success: true,
+    status: 'healthy',
+    timestamp: new Date()
+  });
 });
 
-// Serve frontend assets in production mode
-if (process.env.NODE_ENV === 'production') {
-  // Set static folder
-  app.use(express.static(path.join(__dirname, '../client/dist')));
+/* =========================
+   Production Frontend
+========================= */
 
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '..', 'client', 'dist', 'index.html'));
+if (process.env.NODE_ENV === 'production') {
+
+  // Static folder
+  app.use(
+    express.static(
+      path.join(__dirname, '../client/dist')
+    )
+  );
+
+  // IMPORTANT:
+  // Catch-all route for client-side routing in production
+  app.get('/:path(.*)', (req, res) => {
+    res.sendFile(
+      path.resolve(
+        __dirname,
+        '..',
+        'client',
+        'dist',
+        'index.html'
+      )
+    );
   });
+
 } else {
-  // Default route for API development
+
+  // Development Route
   app.get('/', (req, res) => {
     res.send('API is running in development mode...');
   });
+
 }
 
-// Global error handling middleware
+/* =========================
+   Global Error Handler
+========================= */
+
 app.use((err, req, res, next) => {
-  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+
+  console.error(err);
+
+  const statusCode =
+    res.statusCode && res.statusCode !== 200
+      ? res.statusCode
+      : 500;
+
   res.status(statusCode).json({
     success: false,
-    message: err.message || 'Internal Server Error',
-    stack: process.env.NODE_ENV === 'production' ? null : err.stack,
+    message:
+      err.message || 'Internal Server Error',
+
+    stack:
+      process.env.NODE_ENV === 'production'
+        ? null
+        : err.stack
   });
+
 });
+
+/* =========================
+   Start Server
+========================= */
 
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+
+  console.log(
+    `Server running in ${
+      process.env.NODE_ENV || 'development'
+    } mode on port ${PORT}`
+  );
+
 });

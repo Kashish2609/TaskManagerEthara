@@ -1,12 +1,9 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 
-const AuthContext = createContext();
-
-// API base URL: use Vercel backend in production, proxy (vite) in development
-axios.defaults.baseURL = 'https://task-manager-ethara-x1h7.vercel.app';
-
-
+const AuthContext = createContext
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://taskmanagerethara.onrender.com';
+axios.defaults.baseURL = API_BASE_URL;
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
